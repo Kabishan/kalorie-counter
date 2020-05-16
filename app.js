@@ -19,6 +19,22 @@ const ItemCtrl = (function () {
     getItems: function () {
       return data.items;
     },
+    addItem: function (name, calories) {
+      let id;
+      if (data.items.length > 0) {
+        id = data.items[data.items.length - 1].id + 1;
+      } else {
+        id = 0;
+      }
+
+      calories = parseInt(calories);
+
+      newItem = new Item(id, name, calories);
+
+      data.items.push(newItem);
+
+      return newItem;
+    },
     logData: function () {
       return data;
     },
@@ -26,8 +42,11 @@ const ItemCtrl = (function () {
 })();
 
 const UICtrl = (function () {
-  const UIElements = {
-    itemList: 'item-list',
+  const UISelectors = {
+    itemList: '#item-list',
+    addBtn: '.add-btn',
+    itemName: '#item-name',
+    itemCalories: '#item-calories',
   };
   return {
     populate: function (items) {
@@ -44,16 +63,43 @@ const UICtrl = (function () {
         </li>`;
       });
 
-      document.getElementById(UIElements.itemList).innerHTML = output;
+      document.querySelector(UISelectors.itemList).innerHTML = output;
+    },
+    getItemInput: function () {
+      return {
+        name: document.querySelector(UISelectors.itemName).value,
+        calories: document.querySelector(UISelectors.itemCalories).value,
+      };
+    },
+    getSelectors: function () {
+      return UISelectors;
     },
   };
 })();
 
 const App = (function (ItemCtrl, UICtrl) {
+  const eventListeners = function () {
+    const UISelectors = UICtrl.getSelectors();
+    document
+      .querySelector(UISelectors.addBtn)
+      .addEventListener('click', itemAddSubmit);
+  };
+
+  const itemAddSubmit = function (e) {
+    const input = UICtrl.getItemInput();
+
+    if (input.name !== '' && input.calories !== '') {
+      const newItem = ItemCtrl.addItem(input.name, input.calories);
+    }
+
+    e.preventDefault();
+  };
+
   return {
     init: function () {
       const items = ItemCtrl.getItems();
       UICtrl.populate(items);
+      eventListeners();
     },
   };
 })(ItemCtrl, UICtrl);
